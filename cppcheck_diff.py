@@ -16,8 +16,10 @@ def main():
         description="cppcheck a git diff",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--from-commit", default="HEAD", help="Diff base commit")
-    parser.add_argument("--to-commit", default="", help="Diff destination commit")
+    parser.add_argument(
+        "--from", default="HEAD", help="Diff base commit", dest="from_commit"
+    )
+    parser.add_argument("--to", default="", help="Diff destination commit")
     parser.add_argument(
         "--no-common-ancestor",
         action="store_true",
@@ -51,9 +53,9 @@ def main():
     ).format(
         extra_args=args.extra_args,
         diff_range="{start}{range_spec}{end}".format(
-            start=args.from_commit, range_spec=diff_range_specifier, end=args.to_commit
+            start=args.from_commit, range_spec=diff_range_specifier, end=args.to
         )
-        if args.to_commit
+        if args.to
         else args.from_commit,
         files=" ".join(["'*.{}'".format(c) for c in file_types]),
     )
