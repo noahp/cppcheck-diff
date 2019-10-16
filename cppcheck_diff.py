@@ -7,6 +7,29 @@ from __future__ import print_function
 
 import argparse
 import subprocess
+import collections
+import re
+
+
+def diff_lines_to_file_lines(diff_lines):
+    """
+    Pass an iterator of the diff lines, eg:
+
+    diff --git "a/file" "b/file"
+    new file mode 100644
+    index 0000000..bd88e01
+    --- /dev/null
+    +++ "b/file"
+    @@ -0,0 +1 @@
+    +yolo
+
+    Returns a dictionary of {"file name": [line numbers]}.
+    """
+    out = collections.defaultdict(list)
+    for line in diff_lines:
+        # TODO parser :( FSM I guess lol
+        print(line.decode(), end="")
+    return out
 
 
 def main():
@@ -47,21 +70,24 @@ def main():
     # pass into git diff + diff-added-lines.
     diff_range_specifier = ".." if args.no_common_ancestor else "..."
     file_types = args.file_types.split(",")
-    cmd = (
-        "git diff {extra_args} --unified=0 "
-        "{diff_range} -- {files} | bash diff-added-lines.sh"
-    ).format(
-        extra_args=args.extra_args,
-        diff_range="{start}{range_spec}{end}".format(
+    if args.to:
+        diff_range = "{start}{range_spec}{end}".format(
             start=args.from_commit, range_spec=diff_range_specifier, end=args.to
         )
-        if args.to
-        else args.from_commit,
+    else:
+        diff_range = args.from_commit
+    cmd = (
+        "git --no-pager diff {extra_args} --unified=0 " "{diff_range} -- {files}"
+    ).format(
+        extra_args=args.extra_args,
+        diff_range=diff_range,
         files=" ".join(["'*.{}'".format(c) for c in file_types]),
     )
     if args.print_cmd:
         print(cmd)
-    subprocess.call(cmd, shell=True)
+    cmd_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+
+    diff_lines = diff_lines_to_file_lines(cmd_process.stdout)
 
 
 if __name__ == "__main__":

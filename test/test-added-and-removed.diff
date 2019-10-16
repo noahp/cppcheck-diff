@@ -1,0 +1,12 @@
+diff --git a/test/test.c b/test/test.c
+new file mode 100644
+index 0000000..39cb277
+--- /dev/null
++++ b/test/test.c
+@@ -0,0 +1,5 @@
+-// fill in stub
++int main(int argc, char **argv) {
++    volatile int yolo[4];
++    yolo[4] = 123;  // whoopsie!
++    return 0;
++}
